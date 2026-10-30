@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Product pages — 0-CYBERDYNE-SYSTEMS-0</title>
+<meta name="description" content="Three local tools: Quorum, Lucida, and Possibility Studio.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#031E29;--ink:#FFF2D5;--soft:rgba(255,242,213,.8);--faint:rgba(255,242,213,.58);--line:rgba(255,242,213,.16);--line2:rgba(255,242,213,.08);
+    --sans:"Manrope","Helvetica Neue",Arial,sans-serif;--serif:"Newsreader",Georgia,serif;--mono:"IBM Plex Mono",ui-monospace,Menlo,monospace}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background-color:var(--bg);color:var(--ink);font:400 16px/1.6 var(--sans);-webkit-font-smoothing:antialiased;
+    background-image:radial-gradient(1100px 760px at 6% -12%,rgba(27,59,255,.10),transparent 62%),
+      radial-gradient(900px 700px at 104% 2%,rgba(255,242,213,.06),transparent 58%),
+      linear-gradient(180deg,#0A2A36 0%,var(--bg) 42%,#021820 100%);background-attachment:fixed}
+  .wrap{max-width:1200px;margin:0 auto;padding:0 40px}
+  .top{display:flex;justify-content:space-between;align-items:center;padding:20px 0;border-bottom:1px solid var(--line)}
+  .mark{font:700 12px/1 var(--sans);letter-spacing:.3em}
+  .tag{font:400 10px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+  h1{font:400 clamp(40px,6vw,76px)/.98 var(--serif);letter-spacing:-.025em;margin:56px 0 0;max-width:16ch}
+  h1 em{font-style:italic;color:#98A0E8}
+  .lede{margin-top:18px;max-width:52ch;color:var(--soft)}
+  .grid{margin:44px 0 60px;border-top:1px solid var(--line)}
+  .row{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:44px;align-items:center;padding:34px 0;border-bottom:1px solid var(--line2);text-decoration:none;color:inherit}
+  .row:hover .shot{border-color:var(--ink)}
+  .shot{border:1px solid var(--line);border-radius:3px;overflow:hidden;background:#0A2632;aspect-ratio:16/10;display:grid;place-items:center}
+  .shot img{width:100%;height:100%;object-fit:contain}
+  .no{font:500 10px/1 var(--mono);letter-spacing:.16em;color:var(--faint)}
+  h2{font:400 30px/1.1 var(--serif);letter-spacing:-.015em;margin:8px 0 6px}
+  .row p{color:var(--soft);font-size:14px;max-width:44ch}
+  .go{display:inline-block;margin-top:12px;font:500 10px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;border-bottom:1px solid var(--line);padding-bottom:4px}
+  footer{border-top:1px solid var(--line);padding:18px 0 48px;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;font:400 9.5px/1.6 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+  footer a{color:inherit;text-decoration:none;border-bottom:1px solid var(--line2)}
+  @media(max-width:860px){.wrap{padding:0 20px}.row{grid-template-columns:1fr;gap:18px;padding:24px 0}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><span class="mark">0-CYBERDYNE-SYSTEMS-0</span><span class="tag">Product pages</span></div>
+  <h1>Three local tools. <em>One page each.</em></h1>
+  <p class="lede">Each page shows the real interface, in the order you would use it. Screenshots are uncropped; click any of them for full size.</p>
+
+  <div class="grid">
+    <a class="row" href="quorum/">
+      <div class="shot"><img src="quorum/assets/landing-900.jpg" alt="Quorum: a sample board session" loading="lazy"></div>
+      <div><span class="no">01</span><h2>Quorum</h2><p>An LLM roundtable of business experts on one decision. Four positions, one memo.</p><span class="go">Open the page →</span></div>
+    </a>
+    <a class="row" href="lucida/">
+      <div class="shot"><img src="lucida/assets/03-original-900.jpg" alt="Lucida: a page from the STARFORGE sample" loading="lazy"></div>
+      <div><span class="no">02</span><h2>Lucida</h2><p>A page-by-page PDF teacher. Text, charts, and images generated on your machine.</p><span class="go">Open the page →</span></div>
+    </a>
+    <a class="row" href="possibility-studio/">
+      <div class="shot"><img src="possibility-studio/assets/03-directions-900.jpg" alt="Possibility Studio: three generated directions" loading="lazy"></div>
+      <div><span class="no">03</span><h2>Possibility Studio</h2><p>Describe a web design or animation in plain English. Get three working HTML prototypes.</p><span class="go">Open the page →</span></div>
+    </a>
+  </div>
+
+  <footer>
+    <span>Three pages, no build step</span>
+    <span><a href="https://github.com/0-CYBERDYNE-SYSTEMS-0/quorum">Quorum source</a> · <a href="https://github.com/0-CYBERDYNE-SYSTEMS-0/lucida">Lucida source</a> · <a href="https://github.com/0-CYBERDYNE-SYSTEMS-0/possibility-studio">Studio source</a></span>
+  </footer>
+</div>
+</body>
+</html>

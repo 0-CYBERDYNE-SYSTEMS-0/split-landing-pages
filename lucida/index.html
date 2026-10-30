@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lucida — a page-by-page reading teacher for PDFs</title>
+<meta name="description" content="A local reader that walks a PDF page by page, with charts and images generated on your machine.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#031E29; --ink:#FFF2D5; --soft:rgba(255,242,213,.8); --faint:rgba(255,242,213,.58);
+    --line:rgba(255,242,213,.16); --line2:rgba(255,242,213,.08); --accent:#DDA488;
+    --sans:"Manrope","Helvetica Neue",Arial,sans-serif;
+    --serif:"Newsreader",Georgia,serif;
+    --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{background-color:var(--bg);
+       background-image:
+         radial-gradient(1100px 760px at 6% -12%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 62%),
+         radial-gradient(900px 700px at 104% 2%, color-mix(in srgb, var(--ink) 6%, transparent), transparent 58%),
+         linear-gradient(180deg, color-mix(in srgb, var(--bg) 88%, var(--ink)) 0%, var(--bg) 42%, color-mix(in srgb, var(--bg) 84%, #000) 100%);
+       background-attachment:fixed;color:var(--ink);font:400 16px/1.6 var(--sans);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overflow-x:hidden}
+  ::selection{background:var(--accent);color:#fff}
+  a{color:inherit}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+  .wrap{max-width:1440px;margin:0 auto;padding:0 40px}
+
+  .top{position:sticky;top:0;z-index:20;background:var(--bg);background:color-mix(in srgb, var(--bg) 82%, transparent);backdrop-filter:blur(16px) saturate(1.15);border-bottom:1px solid var(--line)}
+  .top-in{max-width:1440px;margin:0 auto;padding:16px 40px;display:flex;align-items:center;gap:16px}
+  .mark{font:700 12px/1 var(--sans);letter-spacing:.3em}
+  .mark i{color:var(--accent);font-style:normal}
+  .tag{font:400 10px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--soft)}
+  .sp{flex:1}
+  .top a.src{font:500 10px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;text-decoration:none;color:var(--soft);border-bottom:1px solid var(--line);padding-bottom:4px}
+  .top a.src:hover{color:var(--ink);border-color:var(--ink)}
+
+  .intro{padding:64px 0 44px;display:grid;grid-template-columns:minmax(0,1.42fr) minmax(0,.58fr);gap:44px;align-items:end}
+  .kicker{font:500 10px/1 var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--faint);margin-bottom:22px}
+  h1{font:400 clamp(42px,6.2vw,86px)/.98 var(--serif);letter-spacing:-.025em;max-width:16ch}
+  h1 em{font-style:italic;color:var(--accent)}
+  .intro p{color:var(--soft);max-width:42ch;padding-bottom:8px}
+  .intro p b{color:var(--ink);font-weight:600}
+
+  .split{display:grid;grid-template-columns:minmax(0,1.42fr) minmax(0,.58fr);gap:44px;align-items:start;padding-bottom:64px}
+  .view{position:sticky;top:84px}
+  .chrome{border:1px solid var(--line);border-radius:4px;overflow:hidden;background:color-mix(in srgb, var(--ink) 5%, var(--bg))}
+  .dots{display:flex;gap:6px;padding:11px 12px;background:#fff;border-bottom:1px solid var(--line2)}
+  .dots i{width:7px;height:7px;border-radius:50%;background:color-mix(in srgb, var(--ink) 18%, transparent)}
+  .frame{position:relative;background:color-mix(in srgb, var(--ink) 7%, var(--bg));display:grid;place-items:center;aspect-ratio:16/10;max-height:min(66vh,660px);overflow:hidden;border-bottom:1px solid var(--line2)}
+  .frame img{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:contain}
+  .frame.portrait{aspect-ratio:auto;height:auto;max-height:none;background:transparent;border-bottom:0;display:block}
+  .frame.portrait img{position:static;width:auto;height:min(66vh,640px);max-width:100%;margin:0 auto;object-fit:contain;border:1px solid var(--line);box-shadow:0 18px 44px -26px rgba(10,10,10,.35)}
+  .vcap{display:flex;justify-content:space-between;gap:14px;padding:12px 14px;border-top:1px solid var(--line);background:var(--bg);font:400 10px/1.5 var(--mono);letter-spacing:.05em;color:var(--soft);text-transform:uppercase}
+  .vcap b{color:var(--ink);font-weight:500}
+  .vcap a.fs{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--line)}
+  .vcap a.fs:hover{border-color:var(--ink)}
+  .progress{height:2px;background:var(--line2);margin-top:14px;position:relative}
+  .progress i{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--accent);transition:width .35s ease}
+
+  .steps{display:flex;flex-direction:column}
+  .step{padding:30px 0 34px;border-top:1px solid var(--line);cursor:pointer;opacity:.55;transition:opacity .25s ease}
+  .step:first-child{border-top:0;padding-top:4px}
+  .step.on{opacity:1}
+  .step:hover{opacity:.85}
+  .step .k{display:flex;justify-content:space-between;gap:12px;font:500 9.5px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--accent)}
+  .step .k span:last-child{color:var(--faint)}
+  .step h2{font:400 30px/1.1 var(--serif);letter-spacing:-.015em;margin:10px 0 8px}
+  .step p{font-size:14.5px;color:var(--soft);max-width:46ch}
+  .step p b{color:var(--ink);font-weight:600}
+  .step .see{margin-top:12px;padding-top:10px;border-top:1px solid var(--line2);font:400 10px/1.6 var(--mono);letter-spacing:.04em;color:var(--soft)}
+  .step-figure{display:none}
+
+  .facts{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-top:20px}
+  .fact{padding:22px 20px 22px 0;border-right:1px solid var(--line2)}
+  .fact:last-child{border-right:0}
+  .fact .n{font:400 38px/1 var(--serif);letter-spacing:-.02em}
+  .fact .l{font:500 9.5px/1.5 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-top:8px}
+
+  .end{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:48px;padding:48px 0 40px}
+  .end h2{font:400 34px/1.06 var(--serif);letter-spacing:-.02em;max-width:20ch}
+  .end h2 em{font-style:italic;color:var(--accent)}
+  .cta{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:20px}
+  .btn{display:inline-flex;align-items:center;gap:10px;background:var(--ink);color:var(--bg);text-decoration:none;padding:13px 18px;border-radius:2px;font:600 12.5px/1 var(--sans);transition:background .2s,gap .2s}
+  .btn:hover{background:var(--accent);gap:15px}
+  .run{font:400 10.5px/1.8 var(--mono);color:var(--faint);letter-spacing:.03em}
+  .run code{background:rgba(10,10,10,.05);padding:1px 5px}
+  .limits{border-left:2px solid var(--accent);padding-left:16px;font-size:13px;color:var(--soft)}
+  .limits b{display:block;font:500 9.5px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin-bottom:8px}
+
+  footer{border-top:1px solid var(--line);padding:18px 0 40px;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;font:400 9.5px/1.6 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+  footer a{text-decoration:none;border-bottom:1px solid var(--line2)}
+  footer a:hover{border-color:var(--ink)}
+
+
+  
+  @media(max-width:960px){
+    .wrap{padding:0 20px}
+    .top-in{padding:13px 20px}
+    .intro{grid-template-columns:1fr;gap:18px;padding:36px 0 28px}
+    .split{grid-template-columns:1fr;gap:24px;padding-bottom:40px}
+    .view{display:none}
+    .step{opacity:1;padding:26px 0 30px;cursor:default}
+    .step-figure{display:block;margin:14px 0 16px;border:1px solid var(--line);border-radius:3px;overflow:hidden;background:color-mix(in srgb, var(--ink) 5%, var(--bg))}
+    .step-figure a{display:block;position:relative}
+    .step-figure img{display:block;width:100%;height:auto}
+    .step-figure .zoomtag{position:absolute;right:8px;bottom:8px;background:rgba(255,255,255,.94);border:1px solid var(--line);padding:5px 7px;font:500 8.5px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--soft)}
+    .facts{grid-template-columns:1fr 1fr}
+    .fact{padding:16px 12px 16px 0;border-bottom:1px solid var(--line2)}
+    .end{grid-template-columns:1fr;gap:28px;padding:36px 0 28px}
+  }
+  @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="top-in">
+    <span class="mark">Lucida<i>.</i></span>
+    <span class="tag">Page-by-page PDF teacher</span>
+    <span class="sp"></span>
+    <a class="src" href="https://github.com/0-CYBERDYNE-SYSTEMS-0/lucida">Source</a>
+  </div>
+</div>
+
+<main class="wrap">
+  <section class="intro">
+    <div>
+      <p class="kicker">Lucida / three screens</p>
+      <h1>Read a PDF,<br /><em>page by page.</em></h1>
+    </div>
+    <p>Lucida walks a PDF one page at a time, the way a teacher would: the text, its table drawn as a chart, and an image generated on your machine to make the point land. <b>No account, no upload, no API key.</b></p>
+  </section>
+
+  <section class="split">
+    <div class="view">
+      <div class="chrome">
+        <div class="dots"><i></i><i></i><i></i></div>
+        <div class="frame" id="frame">
+          <img id="shot" src="assets/03-original-1600.jpg" srcset="assets/03-original-900.jpg 900w, assets/03-original-1600.jpg 1600w, assets/03-original-2880.jpg 2880w" sizes="(max-width: 960px) 92vw, min(46vw, 900px)" width="1800" height="811" alt="Lucida: page view">
+        </div>
+        <div class="vcap"><span id="vname"><b>01</b> Page view</span><a class="fs" id="fullsize" href="assets/03-original-1600.jpg" target="_blank" rel="noopener">Full size ↗</a></div>
+      </div>
+      <div class="progress"><i id="bar"></i></div>
+    </div>
+
+    <div class="steps" id="steps">
+      <article class="step on" data-i="0">
+        <div class="k"><span>01</span><span>Page view</span></div>
+        <h2>Open a PDF.</h2>
+        <p>Choose a file or the 8-page sample. The page is read on your machine, and the original is one key away.</p>
+        <figure class="step-figure"><a href="assets/03-original-1600.jpg" target="_blank" rel="noopener"><img src="assets/03-original-1600.jpg" srcset="assets/03-original-900.jpg 900w, assets/03-original-1600.jpg 1600w, assets/03-original-2880.jpg 2880w" sizes="92vw" width="1800" height="811" decoding="async" alt="Lucida: page view"><span class="zoomtag">Full size</span></a></figure>
+        <div class="see">A page with its text, chart, and generated plate.</div>
+      </article>
+      <article class="step" data-i="1">
+        <div class="k"><span>02</span><span>Charts</span></div>
+        <h2>Spotlight the parts that matter.</h2>
+        <p>Tables become charts, key terms are explained on the page, and a generated image sits beside the paragraph it illustrates.</p>
+        <figure class="step-figure"><a href="assets/02-concept-1600.jpg" target="_blank" rel="noopener"><img src="assets/02-concept-1600.jpg" srcset="assets/02-concept-900.jpg 900w, assets/02-concept-1600.jpg 1600w, assets/02-concept-2880.jpg 2880w" sizes="92vw" width="1800" height="811" decoding="async" alt="Lucida: charts"><span class="zoomtag">Full size</span></a></figure>
+        <div class="see">A page with definitions and chart callouts.</div>
+      </article>
+      <article class="step" data-i="2">
+        <div class="k"><span>03</span><span>Local</span></div>
+        <h2>Move page by page.</h2>
+        <p>Arrow keys turn pages. Generated images are cached, so going back is instant, and every file stays in a folder you control.</p>
+        <figure class="step-figure"><a href="assets/06-ghosts-1600.jpg" target="_blank" rel="noopener"><img src="assets/06-ghosts-1600.jpg" srcset="assets/06-ghosts-900.jpg 900w, assets/06-ghosts-1600.jpg 1600w, assets/06-ghosts-2880.jpg 2880w" sizes="92vw" width="1800" height="811" decoding="async" alt="Lucida: local"><span class="zoomtag">Full size</span></a></figure>
+        <div class="see">A later chapter in the same sample book.</div>
+      </article>
+    </div>
+  </section>
+
+  <section class="facts">
+    <div class="fact"><div class="n">8</div><div class="l">Sample pages</div></div>
+    <div class="fact"><div class="n">0</div><div class="l">Accounts</div></div>
+    <div class="fact"><div class="n">0</div><div class="l">API keys</div></div>
+    <div class="fact"><div class="n">Local</div><div class="l">Processing</div></div>
+  </section>
+
+  <section class="end">
+    <div>
+      <h2>Open it <em>locally.</em></h2>
+      <div class="cta">
+        <a class="btn" href="https://github.com/0-CYBERDYNE-SYSTEMS-0/lucida">Open the repo <span aria-hidden="true">→</span></a>
+        <span class="run"><code>python3 -m venv .venv</code> <code>pip install -r requirements.txt</code> <code>./run.sh</code></span>
+      </div>
+    </div>
+    <div class="limits"><b>Stated plainly</b>Text extraction does not OCR scanned pages. PDFs, extracted text, and generated images stay in data/&lt;session-id&gt; and are not deleted for you.</div>
+  </section>
+
+  <footer>
+    <span>Lucida / 0-CYBERDYNE-SYSTEMS-0</span>
+    <span>STARFORGE sample · AGPL-3.0</span>
+    <span><a href="../quorum/index.html">Quorum</a> &nbsp;<a href="../possibility-studio/index.html">Possibility Studio</a></span>
+  </footer>
+</main>
+
+
+
+<script>
+  var steps = [].slice.call(document.querySelectorAll(".step"));
+  var imgs = [{"src": "assets/03-original-1600.jpg", "srcset": "assets/03-original-900.jpg 900w, assets/03-original-1600.jpg 1600w, assets/03-original-2880.jpg 2880w", "sizes": "(max-width: 960px) 92vw, min(46vw, 900px)", "w": 1800, "h": 811, "name": "Page view", "alt": "Lucida: page view"}, {"src": "assets/02-concept-1600.jpg", "srcset": "assets/02-concept-900.jpg 900w, assets/02-concept-1600.jpg 1600w, assets/02-concept-2880.jpg 2880w", "sizes": "(max-width: 960px) 92vw, min(46vw, 900px)", "w": 1800, "h": 811, "name": "Charts", "alt": "Lucida: charts"}, {"src": "assets/06-ghosts-1600.jpg", "srcset": "assets/06-ghosts-900.jpg 900w, assets/06-ghosts-1600.jpg 1600w, assets/06-ghosts-2880.jpg 2880w", "sizes": "(max-width: 960px) 92vw, min(46vw, 900px)", "w": 1800, "h": 811, "name": "Local", "alt": "Lucida: local"}];
+  var shot = document.getElementById("shot");
+  var bar = document.getElementById("bar");
+  var vname = document.getElementById("vname");
+  var current = 0;
+
+  function activate(i){
+    if(i===current) return;
+    current = i;
+    steps.forEach(function(s,k){ s.classList.toggle("on", k===i); });
+    var im = imgs[i];
+    document.getElementById("frame").classList.toggle("portrait", (im.w / im.h) < 1.15);
+    shot.src = im.src;
+    shot.srcset = im.srcset;
+    shot.sizes = im.sizes;
+    shot.width = im.w;
+    shot.height = im.h;
+    shot.alt = im.alt;
+    vname.innerHTML = "<b>" + String(i+1).padStart(2,"0") + "</b> " + im.name;
+    document.getElementById("fullsize").href = im.src;
+    bar.style.width = ((i+1)/imgs.length*100) + "%";
+  }
+  steps.forEach(function(s,i){
+    s.addEventListener("click", function(){
+      s.scrollIntoView({behavior:"smooth", block:"center"});
+      activate(i);
+    });
+  });
+  var pending = false;
+  function pickStep(){
+    ticking = false;
+    var mid = window.innerHeight * 0.45;
+    var best = 0, bestD = Infinity;
+    steps.forEach(function(s, i){
+      var r = s.getBoundingClientRect();
+      if(r.bottom < 80) return;
+      var d = Math.abs((r.top + r.height / 2) - mid);
+      if(d < bestD){ bestD = d; best = i; }
+    });
+    if(window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4){
+      best = steps.length - 1;
+    }
+    activate(best);
+  }
+  window.addEventListener("scroll", function(){
+    if(pending) return;
+    pending = true;
+    setTimeout(function(){ pending = false; pickStep(); }, 60);
+  }, {passive:true});
+  window.addEventListener("resize", pickStep);
+  pickStep();
+  bar.style.width = (1/imgs.length*100) + "%";
+
+  
+</script>
+</body>
+</html>
